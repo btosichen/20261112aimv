@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 音樂創作 - 學生作業繳交系統</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Noto Sans TC & Fredoka -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Canvas Confetti CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Noto Sans TC"', 'sans-serif'],
+            display: ['Fredoka', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              purple: '#8B5CF6',
+              pink: '#EC4899',
+              yellow: '#F59E0B',
+              blue: '#3B82F6',
+              green: '#10B981',
+              dark: '#1E1B4B'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #F3F4F6;
+      border-radius: 8px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #C4B5FD;
+      border-radius: 8px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #8B5CF6;
+    }
+  </style>
+</head>
+<body class="font-sans antialiased text-gray-800 p-3 sm:p-6 md:p-10 flex items-center justify-center">
+
+  <div class="w-full max-w-6xl glass-card rounded-3xl overflow-hidden border-4 border-white/50 my-auto">
+    
+    <!-- 頂部 Header -->
+    <header class="bg-gradient-to-r from-violet-600 via-pink-500 to-amber-500 p-6 text-white relative overflow-hidden">
+      <div class="absolute -right-10 -bottom-10 opacity-20 text-9xl">
+        <i class="fa-solid font-bold fa-music"></i>
+      </div>
+      <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <div class="inline-block bg-white/20 px-3 py-1 rounded-full text-xs font-bold tracking-wide uppercase mb-2 backdrop-blur-md">
+            🎵 高一 AI 應用課程
+          </div>
+          <h1 class="text-2xl sm:text-3xl md:text-4xl font-black font-display tracking-wide">
+            AI 音樂創作作業繳交學習單
+          </h1>
+          <p class="text-white/80 text-sm mt-1">請依照步驟填寫，右側會同步生成你的專屬 AI 創作 Prompt！</p>
+        </div>
+        <div class="bg-white/10 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/20 text-right self-start md:self-auto">
+          <span class="text-xs text-white/70 block">適用對象</span>
+          <span class="font-bold text-yellow-300">高一 101 ~ 110 班</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- 主體內容區塊：精靈流程 + 右側 Prompt 預覽 -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-0">
+      
+      <!-- 左側：多步驟表單 (7/12) -->
+      <div class="lg:col-span-7 p-6 sm:p-8 border-b lg:border-b-0 lg:border-r border-gray-100 flex flex-col justify-between">
+        
+        <div>
+          <!-- 進度條 Header -->
+          <div class="mb-8">
+            <div class="flex justify-between items-center mb-3">
+              <span id="step-badge" class="text-xs font-bold px-3 py-1 rounded-full bg-violet-100 text-violet-700">
+                步驟 1 / 4
+              </span>
+              <span id="step-title-text" class="text-sm font-bold text-gray-500">
+                基本資料
+              </span>
+            </div>
+            
+            <!-- 進度條軌道 -->
+            <div class="w-full bg-gray-200 h-3 rounded-full overflow-hidden p-0.5">
+              <div id="progress-bar" class="bg-gradient-to-r from-violet-500 to-pink-500 h-full rounded-full transition-all duration-300 ease-out" style="width: 25%;"></div>
+            </div>
+
+            <!-- 步驟點點標記 -->
+            <div class="flex justify-between mt-2 px-1">
+              <div class="step-dot text-center font-bold text-xs text-violet-600" data-step="1">1. 基本資料</div>
+              <div class="step-dot text-center font-bold text-xs text-gray-400" data-step="2">2. 作品核心</div>
+              <div class="step-dot text-center font-bold text-xs text-gray-400" data-step="3">3. AI 提示詞</div>
+              <div class="step-dot text-center font-bold text-xs text-gray-400" data-step="4">4. 學習反思</div>
+            </div>
+          </div>
+
+          <!-- 表單內容 container -->
+          <form id="assignment-form" onsubmit="event.preventDefault();">
+            
+            <!-- Step 1: 基本資料 -->
+            <div class="step-content space-y-5" id="step-1">
+              <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                <i class="fa-solid fa-id-card text-violet-500"></i> 步驟 1：個人基本資料
+              </h2>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-bold text-gray-700 mb-2">班級 <span class="text-red-500">*</span></label>
+                  <select id="classNum" required class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-violet-500 focus:outline-none transition-colors bg-white">
+                    <option value="">選擇班級</option>
+                    <option value="101">101 班</option>
+                    <option value="102">102 班</option>
+                    <option value="103">103 班</option>
+                    <option value="104">104 班</option>
+                    <option value="105">105 班</option>
+                    <option value="106">106 班</option>
+                    <option value="107">107 班</option>
+                    <option value="108">108 班</option>
+                    <option value="109">109 班</option>
+                    <option value="110">110 班</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-sm font-bold text-gray-700 mb-2">座號 <span class="text-red-500">*</span></label>
+                  <input type="number" id="seatNum" min="1" max="50" placeholder="例：05" required class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-violet-500 focus:outline-none transition-colors">
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-bold text-gray-700 mb-2">姓名 <span class="text-red-500">*</span></label>
+                <input type="text" id="studentName" placeholder="請輸入全名" required class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-violet-500 focus:outline-none transition-colors">
+              </div>
+
+              <div>
+                <label class="block text-sm font-bold text-gray-700 mb-2">作品名稱 <span class="text-red-500">*</span></label>
+                <input type="text" id="songTitle" placeholder="給你的 AI 曲子取個酷炫的名字吧！" required class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-violet-500 focus:outline-none transition-colors">
+              </div>
+            </div>
+
+            <!-- Step 2: 作品核心 -->
+            <div class="step-content space-y-5 hidden" id="step-2">
+              <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                <i class="fa-solid fa-compact-disc text-pink-500"></i> 步驟 2：音樂作品定位與概念
+              </h2>
+
+              <div>
+                <label class="block text-sm font-bold text-gray-700 mb-2">音樂主題故事背景 <span class="text-red-500">*</span></label>
+                <textarea id="themeStory" rows="2" placeholder="簡述這首歌背後想表達的故事或情境 (例：深夜在大雨中獨自騎車的孤獨感)" class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-pink-500 focus:outline-none transition-colors custom-scrollbar"></textarea>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-bold text-gray-700 mb-2">曲風類型 <span class="text-red-500">*</span></label>
+                  <select id="genre" class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-pink-500 focus:outline-none transition-colors bg-white">
+                    <option value="Lo-Fi Chillhop">Lo-Fi Chillhop (輕鬆放鬆)</option>
+                    <option value="Cyberpunk Synthwave">Cyberpunk Synthwave (科幻復古)</option>
+                    <option value="Epic Cinematic Orchestral">Epic Cinematic (史詩交響)</option>
+                    <option value="K-Pop Modern Dance">K-Pop / Modern Pop (流行舞曲)</option>
+                    <option value="Acoustic Folk Rock">Acoustic Folk (溫暖民謠)</option>
+                    <option value="8-Bit Chiptune Retro">8-Bit Retro Game (復古電玩)</option>
+                    <option value="custom">其他（自行填寫）</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-sm font-bold text-gray-700 mb-2">核心情感 / 氛圍 <span class="text-red-500">*</span></label>
+                  <input type="text" id="emotion" placeholder="例：憂鬱、希望感、熱血沸騰" class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-pink-500 focus:outline-none transition-colors">
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-bold text-gray-700 mb-2">目標受眾 (Target Audience)</label>
+                <input type="text" id="targetAudience" placeholder="例：準備學測壓力大的高中生、夜貓族" class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-pink-500 focus:outline-none transition-colors">
+              </div>
+            </div>
+
+            <!-- Step 3: AI 工具使用 (Prompt 規劃) -->
+            <div class="step-content space-y-5 hidden" id="step-3">
+              <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                <i class="fa-solid fa-wand-magic-sparkles text-amber-500"></i> 步驟 3：AI 工具提示詞 (Prompt) 規劃
+              </h2>
+
+              <div>
+                <label class="block text-sm font-bold text-gray-700 mb-2">
+                  1. 歌曲歌詞 / 腳本設計 (ChatGPT / Claude 提示詞)
+                </label>
+                <textarea id="scriptPrompt" rows="2" placeholder="你如何指令 AI 生成歌詞？(例：請幫我寫一首關於高一生的青春畢業歌，節奏明快...)" class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-amber-500 focus:outline-none transition-colors custom-scrollbar"></textarea>
+              </div>
+
+              <div>
+                <label class="block text-sm font-bold text-gray-700 mb-2">
+                  2. 音樂風格提示詞 (Suno / Udio Style Description) <span class="text-red-500">*</span>
+                </label>
+                <input type="text" id="musicPrompt" placeholder="英文關鍵字佳，例：chill lo-fi beats, rainy mood, soft piano, 80bpm" class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-amber-500 focus:outline-none transition-colors">
+              </div>
+
+              <div>
+                <label class="block text-sm font-bold text-gray-700 mb-2">
+                  3. 封面/MV 圖像風格描述 (Midjourney / Bing Image)
+                </label>
+                <input type="text" id="imagePrompt" placeholder="例：anime style, neon city, raining night, aesthetic light, 8k resolution" class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-amber-500 focus:outline-none transition-colors">
+              </div>
+            </div>
+
+            <!-- Step 4: 學習反思 -->
+            <div class="step-content space-y-5 hidden" id="step-4">
+              <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                <i class="fa-solid fa-brain text-emerald-500"></i> 步驟 4：學習反思與成果繳交
+              </h2>
+
+              <div>
+                <label class="block text-sm font-bold text-gray-700 mb-2">成品連結 (Suno/YouTube/雲端硬碟網址) <span class="text-red-500">*</span></label>
+                <input type="url" id="workUrl" placeholder="https://suno.com/song/..." required class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-500 focus:outline-none transition-colors">
+              </div>
+
+              <div>
+                <label class="block text-sm font-bold text-gray-700 mb-2">創作過程遇到的困難與解決方式 <span class="text-red-500">*</span></label>
+                <textarea id="challenges" rows="2" placeholder="例：剛開始生成的歌聲不夠自然，後來透過調整 Prompt 加上 [Verse] 與 [Chorus] 標籤來改善..." class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-500 focus:outline-none transition-colors custom-scrollbar"></textarea>
+              </div>
+
+              <div>
+                <label class="block text-sm font-bold text-gray-700 mb-2">本次 AI 音樂創作的心得感想 <span class="text-red-500">*</span></label>
+                <textarea id="reflection" rows="2" placeholder="分享你對這堂課或 AI 工具輔助音樂創作的看法..." class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-500 focus:outline-none transition-colors custom-scrollbar"></textarea>
+              </div>
+            </div>
+
+          </form>
+        </div>
+
+        <!-- 按鈕控制區 -->
+        <div class="flex justify-between items-center mt-8 pt-4 border-t border-gray-100">
+          <button id="prev-btn" onclick="nextStep(-1)" class="hidden px-6 py-2.5 rounded-xl font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-all flex items-center gap-2">
+            <i class="fa-solid fa-arrow-left"></i> 上一步
+          </button>
+          <div class="ml-auto flex gap-3">
+            <button id="next-btn" onclick="nextStep(1)" class="px-6 py-2.5 rounded-xl font-bold text-white bg-gradient-to-r from-violet-600 to-pink-500 hover:opacity-90 shadow-lg shadow-pink-500/30 transition-all flex items-center gap-2">
+              下一步 <i class="fa-solid fa-arrow-right"></i>
+            </button>
+            <button id="submit-btn" onclick="submitForm()" class="hidden px-8 py-2.5 rounded-xl font-bold text-white bg-gradient-to-r from-emerald-500 to-teal-600 hover:opacity-90 shadow-lg shadow-emerald-500/30 transition-all flex items-center gap-2">
+              <i class="fa-solid fa-paper-plane"></i> 正式送出作業
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 右側：即時 Prompt 組合預覽與卡片展示 (5/12) -->
+      <div class="lg:col-span-5 bg-slate-900 p-6 sm:p-8 text-white flex flex-col justify-between relative overflow-hidden">
+        <!-- 裝飾背景網格 -->
+        <div class="absolute inset-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:14px_24px] pointer-events-none"></div>
+
+        <div class="relative z-10">
+          <div class="flex items-center justify-between mb-4 border-b border-slate-700 pb-3">
+            <h3 class="text-lg font-bold text-yellow-400 flex items-center gap-2">
+              <i class="fa-solid fa-terminal"></i> AI Prompt 即時卡片
+            </h3>
+            <span class="text-xs bg-violet-900 text-violet-300 px-2.5 py-1 rounded-full font-mono">Live Preview</span>
+          </div>
+
+          <!-- 卡片預覽 -->
+          <div class="bg-slate-800/80 border border-slate-700 rounded-2xl p-5 space-y-4 text-xs font-mono backdrop-blur-sm shadow-inner">
+            
+            <!-- 創作者標籤 -->
+            <div class="flex justify-between items-center text-slate-400 border-b border-slate-700/50 pb-2">
+              <span>創作者：<span id="preview-author" class="text-white font-bold">未填寫</span></span>
+              <span id="preview-class" class="text-violet-400">---</span>
+            </div>
+
+            <!-- 歌名 -->
+            <div>
+              <span class="text-slate-400 block mb-1">🎵 歌曲名稱</span>
+              <p id="preview-title" class="text-base font-bold text-pink-400 font-sans">尚未命名</p>
+            </div>
+
+            <!-- 核心概念 -->
+            <div>
+              <span class="text-slate-400 block mb-1">🎯 概念與曲風</span>
+              <p id="preview-genre" class="text-slate-200">曲風：-</p>
+              <p id="preview-emotion" class="text-slate-200">氛圍：-</p>
+            </div>
+
+            <!-- Suno / Udio 組合提示詞 -->
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+              <div class="flex justify-between items-center mb-1">
+                <span class="text-amber-400 font-bold">🎼 AI 音樂生成 Prompt (Suno/Udio)</span>
+                <button onclick="copyPrompt()" class="text-slate-400 hover:text-white transition-colors" title="複製提示詞">
+                  <i class="fa-regular fa-copy"></i>
+                </button>
+              </div>
+              <p id="preview-prompt" class="text-emerald-400 break-words leading-relaxed">
+                [Genre], [Emotion], [Story Elements]...
+              </p>
+            </div>
+
+            <!-- Cover Image Prompt -->
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+              <span class="text-blue-400 font-bold block mb-1">🖼️ 專輯封面 Image Prompt</span>
+              <p id="preview-img-prompt" class="text-slate-300 break-words italic">
+                A visual representation of the song...
+              </p>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- 右側底部提示 -->
+        <div class="relative z-10 mt-6 pt-4 border-t border-slate-800 text-slate-400 text-xs flex items-center justify-between">
+          <span><i class="fa-solid fa-circle-info text-violet-400"></i> 資料將自動匯入老師的 Google 試算表</span>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 成功送出彈跳視窗 -->
+  <div id="success-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-8 text-center space-y-6 shadow-2xl transform transition-all scale-95 opacity-0" id="modal-card">
+      <div class="w-20 h-20 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center mx-auto text-4xl shadow-inner">
+        <i class="fa-solid fa-check"></i>
+      </div>
+      <div>
+        <h3 class="text-2xl font-black text-gray-800 font-display">作業繳交成功！🎉</h3>
+        <p class="text-gray-500 text-sm mt-2">太棒了！你的 AI 音樂創作作業已經成功傳送到 Google 試算表中。</p>
+      </div>
+      <div class="bg-slate-50 p-4 rounded-2xl text-left text-xs space-y-1.5 text-gray-600 border border-gray-100">
+        <p><strong>學生：</strong><span id="modal-student"></span></p>
+        <p><strong>作品：</strong><span id="modal-title"></span></p>
+        <p><strong>時間：</strong><span id="modal-time"></span></p>
+      </div>
+      <button onclick="location.reload()" class="w-full py-3 bg-gradient-to-r from-violet-600 to-pink-500 text-white font-bold rounded-xl shadow-lg hover:opacity-90 transition-all">
+        再填寫一份 / 返回
+      </button>
+    </div>
+  </div>
+
+  <!-- JavaScript 邏輯 -->
+  <script>
+    // -------------------------------------------------------------
+    // 請將下方網址替換為您部署好的 Google Apps Script Web App URL
+    // -------------------------------------------------------------
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzKIojsZpkgG1A41W8uI5Vm6fADANo3bUytoDoi4Adl3FBQSTMy1V-tdyRFzHt2ImF5/exec";
+
+    let currentStep = 1;
+    const totalSteps = 4;
+
+    // 即時預覽監聽
+    const inputs = ['classNum', 'seatNum', 'studentName', 'songTitle', 'themeStory', 'genre', 'emotion', 'musicPrompt', 'imagePrompt'];
+    inputs.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('input', updatePreview);
+        el.addEventListener('change', updatePreview);
+      }
+    });
+
+    function updatePreview() {
+      const cls = document.getElementById('classNum').value;
+      const seat = document.getElementById('seatNum').value;
+      const name = document.getElementById('studentName').value;
+      const title = document.getElementById('songTitle').value;
+      const genre = document.getElementById('genre').value;
+      const emotion = document.getElementById('emotion').value;
+      const musicPrompt = document.getElementById('musicPrompt').value;
+      const imagePrompt = document.getElementById('imagePrompt').value;
+
+      // 更新個人資料預覽
+      document.getElementById('preview-author').innerText = name ? name : '未填寫';
+      document.getElementById('preview-class').innerText = (cls && seat) ? `${cls} 班 ${seat} 號` : '---';
+      document.getElementById('preview-title').innerText = title ? title : '尚未命名';
+      document.getElementById('preview-genre').innerText = `曲風：${genre || '-'}`;
+      document.getElementById('preview-emotion').innerText = `氛圍：${emotion || '-'}`;
+
+      // 自動組合 AI 音樂 Prompt
+      let combinedPrompt = [];
+      if (genre) combinedPrompt.push(genre);
+      if (emotion) combinedPrompt.push(`${emotion} atmosphere`);
+      if (musicPrompt) combinedPrompt.push(musicPrompt);
+      
+      document.getElementById('preview-prompt').innerText = combinedPrompt.length > 0 
+        ? combinedPrompt.join(', ') 
+        : '[Genre], [Emotion], [Music Description]...';
+
+      // 封面 Prompt
+      document.getElementById('preview-img-prompt').innerText = imagePrompt 
+        ? imagePrompt 
+        : 'Album cover art, style matches music mood...';
+    }
+
+    // 步驟切換邏輯
+    function nextStep(direction) {
+      if (direction === 1 && !validateCurrentStep()) {
+        return;
+      }
+
+      currentStep += direction;
+      if (currentStep < 1) currentStep = 1;
+      if (currentStep > totalSteps) currentStep = totalSteps;
+
+      updateStepUI();
+    }
+
+    function validateCurrentStep() {
+      const currentContainer = document.getElementById(`step-${currentStep}`);
+      const requiredInputs = currentContainer.querySelectorAll('[required]');
+      let isValid = true;
+
+      requiredInputs.forEach(input => {
+        if (!input.value.trim()) {
+          input.classList.add('border-red-500');
+          isValid = false;
+        } else {
+          input.classList.remove('border-red-500');
+        }
+      });
+
+      if (!isValid) {
+        alert('請完整填寫目前步驟的必填欄位 (*)');
+      }
+      return isValid;
+    }
+
+    function updateStepUI() {
+      // 隱藏/顯示步驟區塊
+      for (let i = 1; i <= totalSteps; i++) {
+        const stepEl = document.getElementById(`step-${i}`);
+        if (i === currentStep) {
+          stepEl.classList.remove('hidden');
+        } else {
+          stepEl.classList.add('hidden');
+        }
+      }
+
+      // 更新進度條
+      const progressPercent = (currentStep / totalSteps) * 100;
+      document.getElementById('progress-bar').style.width = `${progressPercent}%`;
+      document.getElementById('step-badge').innerText = `步驟 ${currentStep} / ${totalSteps}`;
+
+      const titles = ['基本資料', '作品核心定位', 'AI 提示詞規劃', '學習反思與繳交'];
+      document.getElementById('step-title-text').innerText = titles[currentStep - 1];
+
+      // 更新步驟點點顏色
+      document.querySelectorAll('.step-dot').forEach((dot, index) => {
+        const stepNum = index + 1;
+        if (stepNum <= currentStep) {
+          dot.classList.remove('text-gray-400');
+          dot.classList.add('text-violet-600');
+        } else {
+          dot.classList.remove('text-violet-600');
+          dot.classList.add('text-gray-400');
+        }
+      });
+
+      // 按鈕控制
+      const prevBtn = document.getElementById('prev-btn');
+      const nextBtn = document.getElementById('next-btn');
+      const submitBtn = document.getElementById('submit-btn');
+
+      if (currentStep === 1) {
+        prevBtn.classList.add('hidden');
+      } else {
+        prevBtn.classList.remove('hidden');
+      }
+
+      if (currentStep === totalSteps) {
+        nextBtn.classList.add('hidden');
+        submitBtn.classList.remove('hidden');
+      } else {
+        nextBtn.classList.remove('hidden');
+        submitBtn.classList.add('hidden');
+      }
+    }
+
+    // 表單送出 (傳送至 Google Apps Script)
+    function submitForm() {
+      if (!validateCurrentStep()) return;
+
+      const submitBtn = document.getElementById('submit-btn');
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 上送中...`;
+
+      const formData = {
+        timestamp: new Date().toLocaleString('zh-TW'),
+        classNum: document.getElementById('classNum').value,
+        seatNum: document.getElementById('seatNum').value,
+        studentName: document.getElementById('studentName').value,
+        songTitle: document.getElementById('songTitle').value,
+        themeStory: document.getElementById('themeStory').value,
+        genre: document.getElementById('genre').value,
+        emotion: document.getElementById('emotion').value,
+        targetAudience: document.getElementById('targetAudience').value,
+        scriptPrompt: document.getElementById('scriptPrompt').value,
+        musicPrompt: document.getElementById('musicPrompt').value,
+        imagePrompt: document.getElementById('imagePrompt').value,
+        workUrl: document.getElementById('workUrl').value,
+        challenges: document.getElementById('challenges').value,
+        reflection: document.getElementById('reflection').value
+      };
+
+      // 判斷是否設定了有效的 GAS 網址
+      if (GOOGLE_SCRIPT_URL === "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE" || !GOOGLE_SCRIPT_URL) {
+        // 模擬成功情境 (供測試前端效果)
+        setTimeout(() => {
+          showSuccessModal(formData);
+        }, 1000);
+        return;
+      }
+
+      // 發送 Fetch POST 請求到 GAS
+      fetch(GOOGLE_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      })
+      .then(() => {
+        showSuccessModal(formData);
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('送出失敗，請檢查網路連線或聯繫老師！');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> 正式送出作業`;
+      });
+    }
+
+    // 成功動畫與 Modal
+    function showSuccessModal(data) {
+      // 觸發彩色紙屑效果 (Confetti)
+      confetti({
+        particleCount: 120,
+        spread: 80,
+        origin: { y: 0.6 }
+      });
+
+      // 設定 Modal 資訊
+      document.getElementById('modal-student').innerText = `${data.classNum}班 ${data.seatNum}號 ${data.studentName}`;
+      document.getElementById('modal-title').innerText = data.songTitle;
+      document.getElementById('modal-time').innerText = data.timestamp;
+
+      // 顯示 Modal
+      const modal = document.getElementById('success-modal');
+      const modalCard = document.getElementById('modal-card');
+      modal.classList.remove('hidden');
+
+      setTimeout(() => {
+        modalCard.classList.remove('scale-95', 'opacity-0');
+        modalCard.classList.add('scale-100', 'opacity-100');
+      }, 50);
+    }
+
+    // 複製 Prompt 功能
+    function copyPrompt() {
+      const promptText = document.getElementById('preview-prompt').innerText;
+      const dummy = document.createElement("textarea");
+      document.body.appendChild(dummy);
+      dummy.value = promptText;
+      dummy.select();
+      document.execCommand("copy");
+      document.body.removeChild(dummy);
+      alert('已複製 AI 音樂提示詞到剪貼簿！');
+    }
+  </script>
+</body>
+</html>
